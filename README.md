@@ -145,7 +145,7 @@ export default function MoodCheckIn({
               <textarea
                 value={todayDescription}
                 onChange={(e) => setTodayDescription(e.target.value)}
-                placeholder="오늘 있었던 일, 느꼈던 감정, 생각들을 자유롭게 적어보세요..."
+                placeholder="오늘 느꼈던 감정, 생각들을 자유롭게 적어보세요..."
                 className="w-full p-3 border border-border rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 rows={4}
               />
@@ -162,7 +162,7 @@ export default function MoodCheckIn({
               <textarea
                 value={supportEvidence}
                 onChange={(e) => setSupportEvidence(e.target.value)}
-                placeholder="이 감정을 뒷받침하는 객관적 사실들을 적어보세요..."
+                placeholder="이 감정을 뒷받침하는 사실들을 적어보세요..."
                 className="w-full p-3 border border-border rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 rows={2}
               />
@@ -172,7 +172,7 @@ export default function MoodCheckIn({
               <textarea
                 value={opposingEvidence}
                 onChange={(e) => setOpposingEvidence(e.target.value)}
-                placeholder="이 감정에 반대되는 증거나 다른 관점을 적어보세요..."
+                placeholder="이 감정에 반대되는 다른 관점을 적어보세요..."
                 className="w-full p-3 border border-border rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 rows={2}
               />
@@ -215,7 +215,7 @@ export default function MoodCheckIn({
             <textarea
               value={tomorrowPlan}
               onChange={(e) => setTomorrowPlan(e.target.value)}
-              placeholder="내일 무엇을 실천할지 적어보세요..."
+              placeholder="내일 무엇을 할지 적어보세요..."
               className="w-full p-3 border border-border rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
               rows={2}
             />
