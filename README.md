@@ -295,8 +295,35 @@ export default function MoodCheckIn({
             </li>
           </ul>
         </div>
+{/* --- 정신건강복지센터 찾기 섹션 추가 --- */}
+<div className="mt-12 border-t border-border pt-8">
+  <h2 className="text-xl font-semibold text-foreground mb-6 text-center md:text-left">
+    🏥 정신건강복지센터 찾기
+  </h2>
+  <ul className="space-y-3 list-disc list-inside text-muted-foreground">
+    <li>
+      <a
+        href="https://www.mohw.go.kr/menu.es?mid=a10706040200"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-500"
+      >
+        광역 정신건강복지센터 찾기
+      </a>
+    </li>
+    <li>
+      <a
+        href="https://www.mohw.go.kr/menu.es?mid=a10706040300"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-500"
+      >
+        우리 동네 정신건강복지센터 찾기
+      </a>
+    </li>
+  </ul>
+</div>
         {/* --- 여기까지 섹션 추가 --- */}
-
       </div> {/* End of max-w-3xl div */}
     </section>
   );
