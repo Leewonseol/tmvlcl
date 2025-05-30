@@ -172,7 +172,7 @@ export default function MoodCheckIn({
           <h3 className="text-lg font-semibold text-foreground mb-4">그 감정을 왜 느꼈을까요?</h3>
           <div className="space-y-4">
             <div>
-              <label htmlFor="supportEvidence" className="block text-sm font-medium text-foreground mb-2">지지 증거:</label>
+              <label htmlFor="supportEvidence" className="block text-sm font-medium text-foreground mb-2">지지 근거:</label>
               <textarea
                 id="supportEvidence"
                 value={supportEvidence}
@@ -183,7 +183,7 @@ export default function MoodCheckIn({
               />
             </div>
             <div>
-              <label htmlFor="opposingEvidence" className="block text-sm font-medium text-foreground mb-2">반대 증거:</label>
+              <label htmlFor="opposingEvidence" className="block text-sm font-medium text-foreground mb-2">반대 근거:</label>
               <textarea
                 id="opposingEvidence"
                 value={opposingEvidence}
