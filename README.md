@@ -290,7 +290,7 @@ export default function MoodCheckIn({
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-500"
               >
-                전국민 마음투자 지원사업 제공기관
+                심리상담·복지서비스 제공기관 조회
               </a>
             </li>
           </ul>
@@ -298,19 +298,9 @@ export default function MoodCheckIn({
 {/* --- 정신건강복지센터 찾기 섹션 추가 --- */}
 <div className="mt-12 border-t border-border pt-8">
   <h2 className="text-xl font-semibold text-foreground mb-6 text-center md:text-left">
-    🏥 정신건강복지센터 찾기
+    🏥 우리 동네 정신건강복지센터 찾기
   </h2>
   <ul className="space-y-3 list-disc list-inside text-muted-foreground">
-    <li>
-      <a
-        href="https://www.mohw.go.kr/menu.es?mid=a10706040200"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-500"
-      >
-        광역 정신건강복지센터 찾기
-      </a>
-    </li>
     <li>
       <a
         href="https://www.mohw.go.kr/menu.es?mid=a10706040300"
