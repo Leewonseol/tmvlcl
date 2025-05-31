@@ -1,88 +1,92 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import json
-import webbrowser # 웹 브라우저를 열기 위한 모듈
+import webbrowser
 from datetime import datetime
 
-# React 코드의 moodOptions 와 유사한 형태로 정의
 mood_options = ["매우나쁨 😢", "나쁨 😟", "보통 😐", "좋음 😊", "매우좋음 😄"]
+
+# 전화상담 안내 정보 (번호, 버튼라벨, 상세설명)
+HELPLINES = [
+    {
+        "label": "정신건강상담 (1577-0199)",
+        "number": "1577-0199",
+        "desc": "우울, 불안, 스트레스, 자살위기 등 정신건강 문제 전반에 대한 24시간 상담. 위기상황 시 즉각 연계."
+    },
+    {
+        "label": "청소년상담 (1388)",
+        "number": "1388",
+        "desc": "청소년의 일상 고민, 학교·가정 문제, 가출·폭력 등 위기상황 및 보호자 상담. 24시간 무료."
+    },
+    {
+        "label": "보건복지상담 (129)",
+        "number": "129",
+        "desc": "복지·의료·긴급지원, 학대, 정신건강 등 생활 전반의 복지상담 및 서비스 연계. 24시간 운영."
+    },
+    {
+        "label": "자살예방상담 (109)",
+        "number": "109",
+        "desc": "자살위기 등 생명과 직결된 긴급상황에 특화된 24시간 상담. 필요시 긴급구조 연계."
+    },
+]
 
 class MoodJournalApp:
     def __init__(self, root_window):
         self.root = root_window
         self.root.title("오늘의 하루 기록")
-        # 창 크기를 더 넓게 설정하여 모든 내용을 잘 보이도록 함
-        self.root.geometry("750x850") 
+        self.root.geometry("760x900") 
 
-        # 상태 변수 (React의 useState와 유사한 역할)
         self.selected_mood = tk.StringVar()
-        
-        # Text 위젯의 내용을 저장할 변수들은 위젯 자체를 참조하여 가져옴
-        # 각 텍스트 영역의 placeholder 텍스트 정의
         self.placeholders = {
             "today_description": "오늘 있었던 일, 느꼈던 감정, 생각들을 자유롭게 적어보세요...",
-            "support_evidence": "이 감정을 뒷받침하는 사실들을 적어보세요...",
-            "opposing_evidence": "감정을 뒷받침하는 사실들에 반대되는 관점을 적어보세요...",
+            "support_evidence": "이 감정을 뒷받침하는 근거를 적어보세요...",
+            "opposing_evidence": "근거에 반대되는 관점이나 사실을 적어보세요...",
             "new_conclusion": "위의 분석을 토대로 새로운 관점이나 결론을 적어보세요...",
             "grateful_experience": "오늘 하루 중 감사했던 일, 긍정적인 경험을 적어보세요...",
             "tomorrow_plan": "내일 무엇을 할지 적어보세요..."
         }
-
         self.create_gui_elements()
 
     def _create_labeled_text_area(self, parent_frame, label_text, placeholder_key, text_height=4):
-        """반복되는 레이블 + 스크롤 가능한 텍스트 영역 생성 부분을 함수로 추출"""
-        frame = ttk.Frame(parent_frame, padding=(0, 5)) # 내부 여백 조정
-        frame.pack(fill=tk.X, pady=2) # 섹션 간 수직 간격 줄임
-        
+        frame = ttk.Frame(parent_frame, padding=(0, 5))
+        frame.pack(fill=tk.X, pady=2)
         label = ttk.Label(frame, text=label_text)
-        label.pack(anchor=tk.W, pady=(0, 3)) # 레이블과 텍스트 영역 사이 간격 줄임
-        
+        label.pack(anchor=tk.W, pady=(0, 3))
         text_area = scrolledtext.ScrolledText(frame, height=text_height, wrap=tk.WORD, font=("Arial", 10), relief=tk.SOLID, borderwidth=1)
-        
         placeholder_text = self.placeholders[placeholder_key]
         text_area.insert(tk.END, placeholder_text)
-        text_area.config(fg='grey') # Placeholder 텍스트 색상
-
+        text_area.config(fg='grey')
         def on_focus_in(event, widget=text_area, placeholder=placeholder_text):
             if widget.get("1.0", tk.END).strip() == placeholder:
                 widget.delete("1.0", tk.END)
                 widget.config(fg='black')
-
         def on_focus_out(event, widget=text_area, placeholder=placeholder_text):
             if not widget.get("1.0", tk.END).strip():
                 widget.insert("1.0", placeholder)
                 widget.config(fg='grey')
-        
         text_area.bind("<FocusIn>", on_focus_in)
         text_area.bind("<FocusOut>", on_focus_out)
         text_area.pack(fill=tk.X, expand=True)
         return text_area
 
     def create_gui_elements(self):
-        # 전체 스크롤을 위한 메인 프레임과 캔버스 설정
         main_canvas_frame = ttk.Frame(self.root)
         main_canvas_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
         canvas = tk.Canvas(main_canvas_frame)
         scrollbar = ttk.Scrollbar(main_canvas_frame, orient="vertical", command=canvas.yview)
         scrollable_inner_frame = ttk.Frame(canvas)
-
         scrollable_inner_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
-
         canvas.create_window((0, 0), window=scrollable_inner_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
-
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
-        
-        # --- 해피 투게더---
+
+        # --- 타이틀 ---
         app_title_frame = ttk.Frame(scrollable_inner_frame, style="Title.TFrame")
         app_title_frame.pack(fill=tk.X, pady=(0,15))
-        
         title_label = ttk.Label(app_title_frame, text="오늘의 하루", font=("Arial", 20, "bold"), anchor="center")
         title_label.pack(pady=(5,2))
         subtitle_label = ttk.Label(app_title_frame, text="오늘 하루를 정리하고 내일을 계획해보세요", font=("Arial", 10), anchor="center")
@@ -91,25 +95,19 @@ class MoodJournalApp:
         # --- 1. 오늘의 하루는 어땠나요? ---
         mood_section = ttk.LabelFrame(scrollable_inner_frame, text="오늘 하루는 어땠나요?", padding="10")
         mood_section.pack(fill=tk.X, pady=7)
-
         mood_select_label = ttk.Label(mood_section, text="감정 선택:")
         mood_select_label.pack(anchor=tk.W, pady=(0,5))
-        
         mood_buttons_container = ttk.Frame(mood_section)
         mood_buttons_container.pack(fill=tk.X)
-
         for mood_text in mood_options:
-            # 실제 값은 이모티콘 제외한 텍스트 부분만 사용
             actual_mood_value = mood_text.split(" ")[0] 
             rb = ttk.Radiobutton(mood_buttons_container, text=mood_text, variable=self.selected_mood, value=actual_mood_value, style="TRadiobutton")
-            rb.pack(side=tk.LEFT, padx=3, expand=True, fill=tk.X) # 버튼들이 공간을 균등하게 차지하도록
-        
+            rb.pack(side=tk.LEFT, padx=3, expand=True, fill=tk.X)
         self.today_description_text = self._create_labeled_text_area(mood_section, "오늘 하루를 자세히 들려주세요:", "today_description", text_height=5)
 
         # --- 2. 그 감정을 왜 느꼈을까요? ---
         analysis_section = ttk.LabelFrame(scrollable_inner_frame, text="그 감정을 왜 느꼈을까요?", padding="10")
         analysis_section.pack(fill=tk.X, pady=7)
-
         self.support_evidence_text = self._create_labeled_text_area(analysis_section, "지지 근거:", "support_evidence", text_height=3)
         self.opposing_evidence_text = self._create_labeled_text_area(analysis_section, "반대 근거:", "opposing_evidence", text_height=3)
         self.new_conclusion_text = self._create_labeled_text_area(analysis_section, "새로운 결론:", "new_conclusion", text_height=3)
@@ -123,14 +121,38 @@ class MoodJournalApp:
         plan_section = ttk.LabelFrame(scrollable_inner_frame, text="내일의 행동 계획", padding="10")
         plan_section.pack(fill=tk.X, pady=7)
         self.tomorrow_plan_text = self._create_labeled_text_area(plan_section, "계획:", "tomorrow_plan", text_height=3)
-        
+
         # --- 제출 버튼 ---
         submit_button = ttk.Button(scrollable_inner_frame, text="기록 완료", command=self.submit_journal_entry, style="Accent.TButton")
         submit_button.pack(pady=15)
 
+        # --- 전화상담 안내 (설명 포함) ---
+        self._create_helplines_section(scrollable_inner_frame)
+
         # --- 전문가 및 센터 찾기 링크 ---
         self._create_info_links(scrollable_inner_frame)
 
+    def _create_helplines_section(self, parent_frame):
+        section = ttk.LabelFrame(parent_frame, text="📞 전화 심리상담 안내", padding="12")
+        section.pack(fill=tk.X, pady=12)
+
+        desc = ttk.Label(section, text="아래에서 본인 상황에 맞는 상담전화를 선택하세요. 각 번호의 상담 범위와 특징을 참고해 주세요.", font=("Arial", 9), foreground="#333")
+        desc.pack(anchor=tk.W, pady=(0,7))
+
+        for item in HELPLINES:
+            row = ttk.Frame(section)
+            row.pack(fill=tk.X, pady=5)
+            btn = tk.Button(
+                row, text=item["label"], font=("Arial", 11, "bold"), fg="white", bg="#1976d2",
+                activebackground="#1565c0", relief="raised", bd=2, height=2, cursor="hand2",
+                command=lambda num=item["number"], lab=item["label"]: self._call_phone(num, lab)
+            )
+            btn.pack(side=tk.LEFT, padx=(0, 10))
+            label = ttk.Label(row, text=item["desc"], font=("Arial", 9), wraplength=520, justify="left")
+            label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        note = ttk.Label(section, text="※ 버튼을 누르면 전화 앱이 실행됩니다. (PC 환경에서는 동작하지 않을 수 있습니다)", font=("Arial", 8), foreground="#888")
+        note.pack(anchor=tk.W, pady=(2,0))
 
     def _create_info_links(self, parent_frame):
         links_section = ttk.LabelFrame(parent_frame, text="도움이 필요하신가요?", padding="10")
@@ -147,7 +169,6 @@ class MoodJournalApp:
             ("한국상담심리학회 상담심리사 찾아보기", "https://krcpa.or.kr/user/new/sub04_1new.asp"),
             ("한국상담학회 전문상담사 찾기", "https://counselors.or.kr/KOR/user/find_counselors.php"),
             ("한국임상심리학회 임상심리전문가 조회", "https://www.kcp.or.kr/new/psychologistManagement/list.asp?listType=1"),
-          
         ]
         for text, url in expert_links_data:
             create_link(links_section, text, url)
@@ -161,38 +182,34 @@ class MoodJournalApp:
         for text, url in center_links_data:
             create_link(links_section, text, url)
 
+    def _call_phone(self, number, label):
+        messagebox.showinfo("전화 연결 안내", f"{label}로 연결합니다.\n(모바일 환경에서만 정상 동작합니다.)")
+        webbrowser.open(f"tel:{number}")
+
     def _get_text_or_empty(self, text_widget, placeholder_key):
-        """텍스트 위젯에서 실제 입력값 또는 빈 문자열 반환"""
         content = text_widget.get("1.0", tk.END).strip()
         return "" if content == self.placeholders[placeholder_key] else content
 
     def submit_journal_entry(self):
-        # 입력값 유효성 검사
         if not self.selected_mood.get():
             messagebox.showerror("입력 오류", "기분을 선택해주세요.")
             return
-        
         today_description = self._get_text_or_empty(self.today_description_text, "today_description")
         if not today_description:
             messagebox.showerror("입력 오류", "오늘 하루 이야기를 입력해주세요.")
             return
-
         new_conclusion = self._get_text_or_empty(self.new_conclusion_text, "new_conclusion")
         if not new_conclusion:
             messagebox.showerror("입력 오류", "새로운 결론을 입력해주세요.")
             return
-        
         grateful_experience = self._get_text_or_empty(self.grateful_experience_text, "grateful_experience")
         if not grateful_experience:
             messagebox.showerror("입력 오류", "감사한 경험을 입력해주세요.")
             return
-
         tomorrow_plan = self._get_text_or_empty(self.tomorrow_plan_text, "tomorrow_plan")
         if not tomorrow_plan:
             messagebox.showerror("입력 오류", "내일의 행동 계획을 입력해주세요.")
             return
-            
-        # 데이터 객체 생성
         journal_data = {
             "timestamp": datetime.now().isoformat(),
             "mood": self.selected_mood.get(),
@@ -203,32 +220,24 @@ class MoodJournalApp:
             "gratefulExperience": grateful_experience,
             "tomorrowPlan": tomorrow_plan,
         }
-
-        # 데이터를 JSON 파일에 저장 (append 모드)
         try:
-            # 기존 데이터를 읽어오거나 새 리스트 생성
             try:
                 with open("mood_journal_log.json", "r", encoding="utf-8") as f:
                     all_entries = json.load(f)
-                    if not isinstance(all_entries, list): # 파일 내용이 리스트가 아니면 리스트로 초기화
+                    if not isinstance(all_entries, list):
                         all_entries = []
             except (FileNotFoundError, json.JSONDecodeError):
                 all_entries = []
-            
-            all_entries.append(journal_data) # 새 항목 추가
-
+            all_entries.append(journal_data)
             with open("mood_journal_log.json", "w", encoding="utf-8") as f:
                 json.dump(all_entries, f, ensure_ascii=False, indent=2)
-                
             messagebox.showinfo("기록 완료", "오늘의 하루 기록이 성공적으로 저장되었습니다.")
             self.clear_all_fields()
         except Exception as e:
             messagebox.showerror("저장 실패", f"기록 저장 중 오류가 발생했습니다: {str(e)}")
 
     def clear_all_fields(self):
-        """모든 입력 필드 초기화"""
-        self.selected_mood.set("") # 라디오 버튼 선택 해제
-        
+        self.selected_mood.set("")
         text_widget_map = {
             self.today_description_text: "today_description",
             self.support_evidence_text: "support_evidence",
@@ -237,28 +246,22 @@ class MoodJournalApp:
             self.grateful_experience_text: "grateful_experience",
             self.tomorrow_plan_text: "tomorrow_plan",
         }
-        
         for widget, placeholder_key in text_widget_map.items():
             placeholder_text = self.placeholders[placeholder_key]
-            widget.config(fg='black') # 임시로 색상 변경 후 내용 삭제
+            widget.config(fg='black')
             widget.delete("1.0", tk.END)
             widget.insert("1.0", placeholder_text)
-            widget.config(fg='grey') # Placeholder 색상으로 복원
-
+            widget.config(fg='grey')
 
 if __name__ == "__main__":
     app_root = tk.Tk()
-    
-    # 스타일 설정 (선택적)
     style = ttk.Style()
-    style.theme_use('clam') # 'clam', 'alt', 'default', 'classic' 등 사용 가능
-
+    style.theme_use('clam')
     style.configure("TLabel", font=("Arial", 10))
     style.configure("TRadiobutton", font=("Arial", 9))
     style.configure("TButton", font=("Arial", 10, "bold"), padding=5)
-    style.configure("Accent.TButton", foreground="white", background="#007bff") # 예시 강조 버튼
-    style.configure("Title.TFrame") # 제목 영역 배경색 등 설정 가능
-    style.configure("TLabelFrame.Label", font=("Arial", 11, "bold")) # LabelFrame 제목 스타일
-
+    style.configure("Accent.TButton", foreground="white", background="#1976d2")
+    style.configure("Title.TFrame")
+    style.configure("TLabelFrame.Label", font=("Arial", 11, "bold"))
     journal_app = MoodJournalApp(app_root)
     app_root.mainloop()
