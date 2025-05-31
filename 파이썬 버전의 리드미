@@ -6,7 +6,6 @@ from datetime import datetime
 
 mood_options = ["매우나쁨 😢", "나쁨 😟", "보통 😐", "좋음 😊", "매우좋음 😄"]
 
-# 전화상담 안내 정보 (번호, 버튼라벨, 상세설명)
 HELPLINES = [
     {
         "label": "정신건강상담 (1577-0199)",
@@ -16,7 +15,7 @@ HELPLINES = [
     {
         "label": "청소년상담 (1388)",
         "number": "1388",
-        "desc": "청소년의 일상 고민, 학교·가정 문제, 가출·폭력 등 위기상황 및 보호자 상담. 24시간 무료."
+        "desc": "청소년의 고민, 학교·가정 문제, 가출·폭력 등 위기상황 및 보호자 상담. 24시간 무료."
     },
     {
         "label": "보건복지상담 (129)",
@@ -126,7 +125,7 @@ class MoodJournalApp:
         submit_button = ttk.Button(scrollable_inner_frame, text="기록 완료", command=self.submit_journal_entry, style="Accent.TButton")
         submit_button.pack(pady=15)
 
-        # --- 전화상담 안내 (설명 포함) ---
+        # --- 전화상담 안내 (tel: 스킴 적용) ---
         self._create_helplines_section(scrollable_inner_frame)
 
         # --- 전문가 및 센터 찾기 링크 ---
@@ -183,7 +182,9 @@ class MoodJournalApp:
             create_link(links_section, text, url)
 
     def _call_phone(self, number, label):
-        messagebox.showinfo("전화 연결 안내", f"{label}로 연결합니다.\n(모바일 환경에서만 정상 동작합니다.)")
+        # 안내 메시지
+        messagebox.showinfo("전화 연결 안내", f"{label}로 연결을 시도합니다.\n(모바일 환경에서만 정상 동작합니다.)")
+        # tel: 스킴으로 전화 앱 실행 시도
         webbrowser.open(f"tel:{number}")
 
     def _get_text_or_empty(self, text_widget, placeholder_key):
