@@ -1,0 +1,119 @@
+<!-- JavaScript 라이브러리 추가 -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+
+<!-- JavaScript 코드 수정 부분 -->
+<script>
+    // 욕구 타입 정의에 설명 추가
+    const desireTypes = [
+        { 
+            key: 'destruction', 
+            label: '파괴 욕구', 
+            icon: '💥', 
+            color: '#dc3545',
+            definition: '공격성과 파괴적 충동'
+        },
+        { 
+            key: 'connection', 
+            label: '연결 욕구', 
+            icon: '❤️', 
+            color: '#28a745',
+            definition: '애착과 친밀감 추구'
+        },
+        { 
+            key: 'escape', 
+            label: '탈출 욕구', 
+            icon: '🏃', 
+            color: '#ffc107',
+            definition: '새로운 경험과 변화 추구'
+        },
+        { 
+            key: 'power', 
+            label: '권력 욕구', 
+            icon: '👑', 
+            color: '#6f42c1',
+            definition: '지배와 통제, 영향력 행사 '
+        },
+        { 
+            key: 'creation', 
+            label: '창조 욕구', 
+            icon: '🎨', 
+            color: '#17a2b8',
+            definition: '새로운 것 창조 및 표현 욕구'
+        },
+        { 
+            key: 'cognition', 
+            label: '인지 욕구', 
+            icon: '🧩', 
+            color: '#fd7e14',
+            definition: '지식 추구 및 이해 욕구'
+        }
+    ];
+
+    // 인물 카드 생성 함수 수정
+    function createCharacterCard(character, index) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'col-md-6 col-lg-4';
+        
+        let desiresHtml = '';
+        desireTypes.forEach(desire => {
+            const value = character.desires[desire.key];
+            desiresHtml += `
+                <div class="desire-slider">
+                    <label class="form-label">
+                        <span data-bs-toggle="tooltip" 
+                              data-bs-title="${desire.definition}"
+                              style="cursor: help">
+                            ${desire.icon} ${desire.label}
+                        </span>
+                        <span class="badge" style="background-color: ${desire.color}">${value.toFixed(2)}</span>
+                    </label>
+                    <input type="range" class="form-range" 
+                           min="0" max="1" step="0.01" value="${value}"
+                           onchange="updateCharacterDesire(${index}, '${desire.key}', this.value)">
+                </div>
+            `;
+        });
+        
+        // 나머지 카드 내용은 동일 유지
+        cardDiv.innerHTML = `
+            <div class="character-card">
+                <h6>
+                    <i class="fas fa-user"></i> ${character.name}
+                    <button class="btn btn-sm btn-outline-light float-end" 
+                            onclick="deleteCharacter(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </h6>
+                ${desiresHtml}
+                <hr>
+                <small>
+                    <strong>특성:</strong><br>
+                    정신: ${character.traits.mental.toFixed(2)} | 
+                    사회: ${character.traits.social.toFixed(2)} | 
+                    노력: ${character.effort.toFixed(2)}
+                </small>
+            </div>
+        `;
+        
+        return cardDiv;
+    }
+
+    // 툴팁 초기화 코드 추가
+    function updateCharacterDisplay() {
+        const container = document.getElementById('charactersContainer');
+        container.innerHTML = '';
+        
+        characters.forEach((character, index) => {
+            const card = createCharacterCard(character, index);
+            container.appendChild(card);
+        });
+
+        // 툴팁 초기화
+        var tooltipTriggerList = [].slice.call(container.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                trigger: 'hover'
+            });
+        });
+    }
+</script>
