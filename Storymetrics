@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Desire Types</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Character Desire Types</h1>
+        <div id="charactersContainer" class="row"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Function to generate random character attributes
+        function generateCharacter(name) {
+            return {
+                name: name,
+                desires: {
+                    destruction: Math.random(),
+                    connection: Math.random(),
+                    escape: Math.random(),
+                    power: Math.random(),
+                    creation: Math.random(),
+                    cognition: Math.random()
+                },
+                traits: {
+                    mental: Math.random(),
+                    social: Math.random()
+                },
+                effort: Math.random()
+            };
+        }
+
+        // Generate an array of characters with random values
+        const characters = [
+            generateCharacter("Character A"),
+            generateCharacter("Character B"),
+            generateCharacter("Character C"),
+            generateCharacter("Character D")
+        ];
+
+        // Function to create character cards
+        function createCharacterCard(character, index) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'col-md-6 col-lg-4';
+
+            let desiresHtml = '';
+            const desireTypes = [
+                { key: 'destruction', label: 'Destruction', definition: 'Desire for destruction', icon: '💥', color: 'red' },
+                { key: 'connection', label: 'Connection', definition: 'Desire for connection', icon: '🤝', color: 'blue' },
+                { key: 'escape', label: 'Escape', definition: 'Desire for escape', icon: '🏃‍♂️', color: 'green' },
+                { key: 'power', label: 'Power', definition: 'Desire for power', icon: '⚡', color: 'yellow' },
+                { key: 'creation', label: 'Creation', definition: 'Desire for creation', icon: '🎨', color: 'purple' },
+                { key: 'cognition', label: 'Cognition', definition: 'Desire for cognition', icon: '🧠', color: 'orange' }
+            ];
+      
+            desireTypes.forEach(desire => {
+                const value = character.desires[desire.key];
+                desiresHtml += `
+                    <div class="desire-slider">
+                        <label class="form-label">
+                            <span data-bs-toggle="tooltip" data-bs-title="${desire.definition}" style="cursor: help">
+                                ${desire.icon} ${desire.label}
+                            </span>
+                            <span class="badge" style="background-color: ${desire.color}">${value.toFixed(2)}</span>
+                        </label>
+                        <input type="range" class="form-range" min="0" max="1" step="0.01" value="${value.toFixed(2)}" disabled>
+                    </div>
+                `;
+            });
+
+            cardDiv.innerHTML = `
+                <div class="character-card border p-3 mb-4 rounded">
+                    <h6>${character.name}</h6>
+                    ${desiresHtml}
+                    <hr>
+                    <small>
+                        <strong>특성:</strong><br>
+                        정신: ${character.traits.mental.toFixed(2)} |
+                        사회: ${character.traits.social.toFixed(2)} |
+                        노력: ${character.effort.toFixed(2)}
+                    </small>
+                </div>
+            `;
+
+            return cardDiv;
+        }
+
+        function updateCharacterDisplay() {
+            const container = document.getElementById('charactersContainer');
+            container.innerHTML = '';
+            characters.forEach((character, index) => {
+                const card = createCharacterCard(character, index);
+                container.appendChild(card);
+            });
+
+            var tooltipTriggerList = [].slice.call(container.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    trigger: 'hover'
+                });
+            });
+        }
+
+        // Initialize the display
+        updateCharacterDisplay();
+    </script>
+</body>
+</html>
