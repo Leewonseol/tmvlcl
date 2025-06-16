@@ -8,16 +8,19 @@ library(ggplot2)
 n_simulations <- 100000
 n_competitors <- 13
 positions <- 5
-gpa_penalty_factor <- 0.0 # 동점자 경쟁 시, 학점으로 인해 무조건 탈락
+
+# GPA 패널티 시나리오
+# 1. 좋은 학부 + 좋은 학점: 1.0 (패널티 없음)
+# 2. 좋은 학부 + 나쁜 학점: 0.5 (패널티 있음)
+# 3. 나쁜 학부 + 좋은 학점: 0.5 (패널티 있음)
+# 4. 나쁜 학부 + 나쁜 학점: 0.0 (무조건 탈락)
+gpa_penalty_factor <- 0.0 # 나쁜 학부의 나쁜 학점에 해당
 
 # 각 세부항목별 능력치 분포 파라미터 설정
 skill_distributions <- list(
-  # 이름, alpha, beta
-  # [수정] 이제 관문 1의 모든 항목이 '쉬움' 또는 '보통'이 됨
   pass_1_1 = c(4, 2),   # 맞춤형 관심: 쉬움
   pass_1_2 = c(5, 2),   # 논리적 연결성: 매우 쉬움
   pass_1_3 = c(3, 2),   # 정보 탐색: 중간보다 쉬움
-  # 관문 2는 여전히 어려움
   pass_2_1 = c(2.5, 4), # 압박 검증 대응: 어려움
   pass_2_2 = c(2, 6),   # 적용 및 확장: 매우 어려움
   pass_2_3 = c(2.5, 2.5)# 메타인지: 중간 난이도
@@ -57,7 +60,6 @@ for (i in 1:n_simulations) {
   if (total_survivors <= positions) {
     your_prob_results[i] <- 1.0  
   } else {
-    # gpa_penalty_factor가 0이므로, 나의 합격 확률은 0이 됨.
     your_prob_results[i] <- (positions / total_survivors) * gpa_penalty_factor
   }
   
