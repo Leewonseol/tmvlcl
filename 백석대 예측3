@@ -14,7 +14,8 @@ positions <- 5
 # 2. 좋은 학부 + 나쁜 학점: 0.5 (패널티 있음)
 # 3. 나쁜 학부 + 좋은 학점: 0.5 (패널티 있음)
 # 4. 나쁜 학부 + 나쁜 학점: 0.0 (무조건 탈락)
-gpa_penalty_factor <- 0.0 # 나쁜 학부의 나쁜 학점에 해당
+gpa_penalty_cases <- c(1.0, 0.5, 0.5) # 경쟁자용 (1~3번 케이스)
+your_gpa_penalty <- 0.0 # 나쁜 학부 + 나쁜 학점
 
 # 각 세부항목별 능력치 분포 파라미터 설정
 skill_distributions <- list(
@@ -31,38 +32,43 @@ your_prob_results <- numeric(n_simulations)
 pb <- txtProgressBar(min = 0, max = n_simulations, style = 3)
 
 for (i in 1:n_simulations) {
+  # 경쟁자별 GPA 패널티 무작위 할당 (1~3번 케이스)
+  competitor_gpa_penalties <- sample(gpa_penalty_cases, n_competitors, replace = TRUE)
+  survivor_penalties <- numeric(0)
   
-  competitor_survivors_count <- 0
-  
+  # 경쟁자 평가
   for (j in 1:n_competitors) {
-    
     current_probs <- sapply(skill_distributions, function(params) {
       rbeta(1, shape1 = params[1], shape2 = params[2])
     })
-    
-    # --- 관문 1 평가 (통과 기준: 3개 중 2개 이상 성공) ---
+    # 관문 1
     g1_outcomes <- rbinom(3, 1, prob = current_probs[1:3])
     passed_g1 <- sum(g1_outcomes) >= 2
     if (!passed_g1) next
-    
-    # --- 관문 2 평가 (통과 기준: 핵심(2-1) 성공 AND 추가(2-2, 2-3) 중 1개 이상 성공) ---
+    # 관문 2
     passed_g2_core <- rbinom(1, 1, prob = current_probs[4]) == 1
     additional_outcomes <- rbinom(2, 1, prob = current_probs[5:6])
     passed_g2_additional <- sum(additional_outcomes) >= 1
     if (!(passed_g2_core && passed_g2_additional)) next
-    
-    competitor_survivors_count <- competitor_survivors_count + 1
+    # 최종 생존자 패널티 저장
+    survivor_penalties <- c(survivor_penalties, competitor_gpa_penalties[j])
   }
+  # 나 자신도 생존자 집단에 포함
+  survivor_penalties <- c(survivor_penalties, your_gpa_penalty)
   
-  total_survivors <- 1 + competitor_survivors_count
+  # 패널티 적용 후 생존자 집단
+  survivors_with_penalty <- survivor_penalties[survivor_penalties > 0]
+  n_final_survivors <- length(survivors_with_penalty)
   
-  # --- 최종 관문: 학점(GPA) 필터 적용 ---
-  if (total_survivors <= positions) {
-    your_prob_results[i] <- 1.0  
+  # 내가 살아남았는지 확인
+  if (your_gpa_penalty == 0) {
+    your_prob_results[i] <- 0
+  } else if (n_final_survivors <= positions) {
+    your_prob_results[i] <- 1.0
   } else {
-    your_prob_results[i] <- (positions / total_survivors) * gpa_penalty_factor
+    # 동점자 경쟁: 내 패널티가 1명 이상이면 확률적으로 선발
+    your_prob_results[i] <- (positions / n_final_survivors)
   }
-  
   setTxtProgressBar(pb, i)
 }
 close(pb)
@@ -76,3 +82,14 @@ cat("\n--- 궁극의 비관적 시나리오 최종 시뮬레이션 결과 ---\n"
 cat("총", n_simulations, "번의 가상 면접 시뮬레이션 결과...\n\n")
 cat("1. 귀하의 최종 합격 확률(기댓값):", round(final_avg_probability * 100, 2), "%\n")
 cat("2. '리스크 시나리오' 발생 확률:", round(risk_probability * 100, 2), "%\n")
+
+# --- 4. 시각화: 합격 여부 막대그래프 ---
+your_pass_result <- ifelse(your_prob_results > 0, 1, 0)
+df_result <- data.frame(pass = factor(your_pass_result, levels = c(0, 1), labels = c("불합격", "합격")))
+
+ggplot(df_result, aes(x = pass)) +
+  geom_bar(aes(y = (..count..) / sum(..count..)), fill = "skyblue", color = "black", width = 0.5) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "합격/불합격 비율 (몬테카를로 시뮬레이션)",
+       x = "결과", y = "비율") +
+  theme_minimal(base_size = 14)
