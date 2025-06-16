@@ -1,0 +1,89 @@
+# 필요한 라이브러리 로드
+library(dplyr)
+library(ggplot2)
+
+# --- 1. 최종 모델 설정 ---
+
+# 시뮬레이션 기본 정보
+n_simulations <- 100000
+n_applicants <- 14
+positions <- 5
+
+# [신규] 점수 분포 설정
+# 최종 생존자 그룹의 점수 분포 (평균 92, 표준편차 4)
+survivor_score_mean <- 92
+survivor_score_sd <- 4
+
+# 탈락자 그룹의 점수 분포 (평균 65, 표준편차 10)
+nonsurvivor_score_mean <- 65
+nonsurvivor_score_sd <- 10
+
+# 각 세부항목별 능력치 분포(베타 분포) 파라미터 설정
+skill_distributions <- list(
+  pass_1_1 = c(2, 3), pass_1_2 = c(4, 2), pass_1_3 = c(1.5, 4),
+  pass_2_1 = c(2, 4), pass_2_2 = c(1.5, 6), pass_2_3 = c(2, 2.5)
+)
+
+# 귀하의 프로필: 모든 것을 통과할 확률이 매우 높은 최상위 프로필
+# 귀하의 능력치(성공확률)는 각 분포의 상위 5% 수준(0.95)으로 고정하여 차별성을 부여
+my_probs <- sapply(skill_distributions, function(p) qbeta(0.95, p[1], p[2]))
+
+
+# --- 2. 몬테카를로 시뮬레이션 실행 ---
+my_ranks <- numeric(n_simulations)
+pb <- txtProgressBar(min = 0, max = n_simulations, style = 3)
+
+for (i in 1:n_simulations) {
+  
+  # 14명의 점수를 저장할 벡터
+  all_scores <- numeric(n_applicants)
+  
+  # 14명 지원자 각각에 대해 루프 실행 (나 + 경쟁자 13명)
+  for (j in 1:n_applicants) {
+    
+    # j번째 지원자가 나인지, 경쟁자인지 결정
+    is_me <- j == 1
+    
+    # 능력치(성공확률) 설정: 나는 최상위, 경쟁자는 분포에서 무작위 추출
+    current_probs <- if(is_me) my_probs else sapply(skill_distributions, function(p) rbeta(1, p[1], p[2]))
+    
+    # 관문 통과 여부 판정
+    g1_outcomes <- rbinom(3, 1, prob = current_probs[1:3])
+    passed_g1 <- sum(g1_outcomes) >= 2
+    
+    passed_g2 <- FALSE
+    if (passed_g1) {
+      passed_g2_core <- rbinom(1, 1, prob = current_probs[4]) == 1
+      additional_outcomes <- rbinom(2, 1, prob = current_probs[5:6])
+      passed_g2_additional <- sum(additional_outcomes) >= 1
+      if (passed_g2_core && passed_g2_additional) {
+        passed_g2 <- TRUE
+      }
+    }
+    
+    # 관문 통과 여부에 따라 점수 부여
+    if (passed_g1 && passed_g2) {
+      # 최종 생존자는 높은 점수대에서 점수 획득
+      score <- rnorm(1, mean = survivor_score_mean, sd = survivor_score_sd)
+    } else {
+      # 탈락자는 낮은 점수대에서 점수 획득
+      score <- rnorm(1, mean = nonsurvivor_score_mean, sd = nonsurvivor_score_sd)
+    }
+    
+    # 점수는 0점 ~ 100점 사이로 제한
+    all_scores[j] <- max(0, min(100, score))
+  }
+  
+  # 나의 순위 기록
+  my_ranks[i] <- rank(-all_scores, ties.method = "random")[1]
+  
+  setTxtProgressBar(pb, i)
+}
+close(pb)
+
+# --- 3. 최종 결과 분석 및 출력 ---
+final_probability <- sum(my_ranks <= positions) / n_simulations
+
+cat("\n--- 최종 시뮬레이션 결과 (확률적 점수 부여 모델) ---\n")
+cat("총", n_simulations, "번의 가상 면접 시뮬레이션 결과...\n\n")
+cat("귀하의 최종 합격 확률:", round(final_probability * 100, 2), "%\n")
